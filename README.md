@@ -3,7 +3,7 @@
 [![Tank TT title screen](docs/screenshot.jpg)](https://adong.github.io/tank-tt/)
 
 Press **?** any time (or tap the round **?** button on the left edge) to see the keys. The game waits while you look.
-Tap **中文 / EN** under it to switch between English and 中文 (the dashboard and every game remember the choice).
+Tap the language button under it (the A文 icon) to switch between English and 中文; the dashboard and every game remember the choice.
 
 A top-down tank game for Teddy and Tommy, in the spirit of the 1980s arcade tank classics Dad grew up with, and best played together. It's built with Claude Code from plain JavaScript and Three.js, on the shared Claude Games kit.
 Zombie tanks and robot tanks roll in from the top. The brothers drive their own tanks, and each one pops out of his hatch to look around. Together they guard a cookie jar at the bottom of the screen.

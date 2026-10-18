@@ -1211,7 +1211,7 @@
   }
 
   function setupTitle() {
-    const words = TT.TITLE.split(/(TT)/);
+    const words = TT.TITLE.toUpperCase().split(/(TT)/);
     $('logoMain').innerHTML = words.map((w) => (w === 'TT' ? '<span class="tt" style="display:inline">TT</span>' : w)).join('');
     document.title = `${TT.TITLE} · Teddy & Tommy`;
     document.querySelectorAll('[data-face]').forEach((img) => { img.src = faces[img.dataset.face]; });

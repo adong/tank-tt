@@ -2,6 +2,10 @@
 
 [![Tank TT title screen](docs/screenshot.jpg)](https://adong.github.io/tank-tt/)
 
+Two tanks guard the cookie jar from zombie tanks. 16 stages, 1 or 2 players, and you can build your own maps.
+
+**中文：** 两辆坦克守护饼干罐，打退僵尸坦克。16 关，单人或双人，还能自己画地图。
+
 Press **?** any time (or tap the round **?** button on the left edge) to see the keys. The game waits while you look.
 Tap the language button under it (the A文 icon) to switch between English and 中文; the dashboard and every game remember the choice.
 
@@ -10,7 +14,7 @@ Zombie tanks and robot tanks roll in from the top. The brothers drive their own 
 There are no image, model or audio files: the tanks and the arena are built from boxes, every texture is painted on a canvas, and every sound is synthesised.
 It's silly, not violent: enemy tanks poof into stars, and a bonked tank goes BONK! and rolls back in a moment later.
 
-"Tank TT" is a working title. It lives in one constant, `TT.TITLE` in `js/title.js`, and the page title, logo and end screens all follow it.
+The name lives in one constant, `TT.TITLE` in `js/title.js`, and the page title, logo and end screens all follow it.
 
 ## Play
 

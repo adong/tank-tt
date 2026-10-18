@@ -3,6 +3,7 @@
 [![Tank TT title screen](docs/screenshot.jpg)](https://adong.github.io/tank-tt/)
 
 Press **?** any time (or tap the round **?** button on the left edge) to see the keys. The game waits while you look.
+Tap **中文 / EN** under it to switch between English and 中文 (the dashboard and every game remember the choice).
 
 A top-down tank game for Teddy and Tommy, in the spirit of the 1980s arcade tank classics Dad grew up with, and best played together. It's built with Claude Code from plain JavaScript and Three.js, on the shared Claude Games kit.
 Zombie tanks and robot tanks roll in from the top. The brothers drive their own tanks, and each one pops out of his hatch to look around. Together they guard a cookie jar at the bottom of the screen.
@@ -200,6 +201,8 @@ js/sfx.js        the game's own synth sounds and the stage-start jingle
 js/art.js        canvas textures, arena, cookie jar, tanks with drivers, shells, power-ups, effects
 js/editor.js     construction mode
 js/game.js       renderer, camera fit, the loop, events to effects, celebration, HUD, menus, input, test hooks
+js/keys.js       the keys the ? panel shows (Kit.help)
+js/zh.js         中文: the dictionary and rules for every word on screen, the stage names and the comic bursts (Kit.lang)
 tools/check.js   runs js/check.js in Node (no npm)
 kit/             copy of ~/claude-games/kit (python3 ../kit/tools/sync.py .); don't edit it here
 dist/tank-tt.html   the single-page build

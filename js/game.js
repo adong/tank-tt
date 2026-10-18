@@ -551,7 +551,7 @@
     const pads = [$('pad0'), $('pad1')], fires = [$('fire0'), $('fire1')];
     pads.forEach((p) => p.classList.remove('show'));
     fires.forEach((f) => f.classList.remove('show'));
-    const playing = !building && st.mode !== 'title' && st.mode !== 'loading';
+    const playing = ['play', 'intro', 'pause'].includes(st.mode);
     if (!portrait) {
       const side = clamp(w * 0.18, 124, 236);
       const size = Math.max(160, Math.min(h - 20, w - 2 * side - 30));

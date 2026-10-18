@@ -164,9 +164,10 @@
     return G.toTexture(c);
   }
 
-  // A comic starburst with a word in it (POW!, POP!, BONK!...).
+  // A comic starburst with a word in it (POW!, POP!, BONK!...), in the chosen language (Kit.lang).
   const burstCache = {};
-  function burstTexture(word, fill = '#ffd400') {
+  function burstTexture(en, fill = '#ffd400') {
+    const word = Kit.lang ? Kit.lang.t(en) : en;
     const key = word + fill;
     if (burstCache[key]) return burstCache[key];
     const [c, g] = G.makeCanvas(256, 256);
@@ -181,7 +182,9 @@
     g.lineWidth = 8;
     g.strokeStyle = INK;
     g.stroke();
-    g.font = `${word.length > 5 ? 46 : 58}px ${G.FONT}`;
+    let px = 58;
+    g.font = `${px}px ${G.FONT}`;
+    while (g.measureText(word).width > 196 && px > 26) g.font = `${(px -= 4)}px ${G.FONT}`;
     g.textAlign = 'center';
     g.textBaseline = 'middle';
     g.lineWidth = 10;

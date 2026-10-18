@@ -60,7 +60,7 @@
   const POWERS = ['star', 'helmet', 'shovel', 'clock', 'bomb', 'tank'];
   const POWER_WEIGHT = { star: 3, helmet: 2, shovel: 2, clock: 2, bomb: 2, tank: 1 };
   const TREATS = [['🍦', 'ICE CREAM'], ['💧', 'WATER'], ['🧃', 'JUICE'], ['🍪', 'COOKIE'], ['🍉', 'WATERMELON'], ['🍌', 'BANANA']];
-  const VISIT = 10, HELLO = 1.4, BYE = 1.3; // the companion's visit, his hello and his goodbye, in seconds
+  const VISIT = 10, HELLO = 2.0, BYE = 1.3; // the companion's visit, his hello and his goodbye, in seconds
   const LIFE_EVERY = 20000;
 
   // Small seeded random generator, so a check run can be repeated exactly.
@@ -591,7 +591,7 @@
       else if (pw.type === 'clock') S.freezeT = L.freeze;
       else if (pw.type === 'bomb') { for (const o of S.tanks) if (o.alive && o.team === 'enemy') killFoe(o, t, 'bomb'); }
       else if (pw.type === 'tank') { P.reserve++; emit('extraLife', { player: P.i, why: 'power' }); }
-      emit('powerGot', { power: pw, player: P.i, tank: t });
+      emit('powerGot', { power: pw, player: P.i, tank: t, star: P.star });
     }
 
     // ---------------- zombie and robot tanks
@@ -675,7 +675,7 @@
       b.left = VISIT;
       if (b.treatT < 0 && b.phase !== 'enter') { // his last treat is delivered: another hello, another treat
         b.helloT = HELLO;
-        b.treatT = 0.8;
+        b.treatT = 0.55;
         b.save = true;
         b.visits++;
         emit('buddyHello', { tank: b.tank, again: true });
@@ -709,7 +709,7 @@
           t.moving = false;
           b.phase = 'hello';
           b.helloT = HELLO;
-          b.treatT = 0.9;
+          b.treatT = 0.55;
           emit('buddyHello', { tank: t });
         }
         return;

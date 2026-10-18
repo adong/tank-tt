@@ -326,7 +326,7 @@
 
     tex.water.repeat.set(1, 1);
     const waterMat = new T.MeshStandardMaterial({ map: tex.water, roughness: 0.2, metalness: 0.1 });
-    const iceMat = new T.MeshStandardMaterial({ map: tex.ice, roughness: 0.15, metalness: 0.05 });
+    const iceMat = new T.MeshStandardMaterial({ map: tex.ice, color: '#bfe2ff', roughness: 0.35, metalness: 0.05 });
     let water = null, ice = null;
     const m4 = new T.Matrix4(), q = new T.Quaternion(), pos = new T.Vector3(), scl = new T.Vector3(), eul = new T.Euler();
 

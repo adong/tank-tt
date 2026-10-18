@@ -51,7 +51,7 @@
   const base = A.makeBase(scene);
   const fx = A.makeFx(scene);
 
-  const touch = matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window;
+  const touch = matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window || /[?&]touch=1/.test(location.search);
   if (touch) document.body.classList.add('touch');
 
   // pictures for the menus and the HUD
@@ -62,7 +62,7 @@
     return c.toDataURL();
   }
   const icons = {
-    teddy: tankIcon('#3f86e8', '#e53935'), tommy: tankIcon('#7fdcbd', '#f6eedc'), foe: tankIcon('#a8adb8', '#6a6f7c'),
+    teddy: tankIcon('#3f86e8', '#e53935'), tommy: tankIcon('#7fdcbd', '#f6eedc'), foe: tankIcon('#e9edf3', '#ff5a6e'),
     basic: tankIcon('#8db05a', '#5b7834'), fast: tankIcon('#ffd400', '#5b7834'), power: tankIcon('#ff9636', '#626877'), armor: tankIcon('#ff6fa8', '#ffffff'),
   };
   const NAMES = { teddy: 'TEDDY', tommy: 'TOMMY' };
@@ -201,7 +201,7 @@
   function syncViews(dt) {
     const S = st.sim;
     if (!S) return;
-    if (st.mode === 'celebrate') return;
+    if (st.mode === 'celebrate' || st.mode === 'tally') return;
     const seen = new Set();
     for (const t of S.tanks) {
       if (!t.alive) continue;
@@ -371,12 +371,11 @@
         play('powerAppear');
         break;
       case 'powerGot': {
-        const P = S.players[e.player];
         const [x, z] = tankAt(e.tank);
         fx.sparkle(x, z, 0.7, 1.6, 0.5);
         fx.points(x, z - 0.2, 500);
         const msg = {
-          star: ['', '⭐ FASTER SHOTS!', '⭐⭐ TWO SHOTS AT ONCE!', '⭐⭐⭐ STEEL BUSTER!'][P.star] || '⭐ SUPER SHOTS!',
+          star: ['', '⭐ FASTER SHOTS!', '⭐⭐ TWO SHOTS AT ONCE!', '⭐⭐⭐ STEEL BUSTER!'][e.star] || '⭐ SUPER SHOTS!',
           helmet: '🪖 SHIELD ON!', shovel: '🧱 STEEL AROUND THE COOKIES!', clock: '⏰ FREEZE!', bomb: '💣 KABOOM! ALL POOF!', tank: '+1 TANK!',
         }[e.power.type];
         toast(msg, 'good', 1.8);
@@ -513,7 +512,7 @@
     const age = st.time - b.born;
     if (age > b.dur) { el.classList.add('hidden'); st.banner = null; return; }
     const kin = Math.min(1, age / 0.3);
-    el.style.top = `${rect.y + rect.size * 0.32}px`;
+    el.style.top = `${rect.y + rect.size * (st.mode === 'celebrate' ? 0.06 : 0.32)}px`;
     el.style.opacity = String(Math.min(kin * 2, clamp((b.dur - age) / 0.3, 0, 1)));
     el.style.transform = `scale(${kin < 1 ? 2 - smooth(kin) : 1})`;
   }
@@ -530,13 +529,9 @@
     el.classList.add('no');
   }
 
-  function bumpCard(i) {
-    const el = $('card' + i);
-    if (!el) return;
-    el.classList.remove('bump');
-    void el.offsetWidth;
-    el.classList.add('bump');
-  }
+  // a quick yellow flash on a player's card (timed by the game clock, so it also works in a background tab)
+  const cardBump = [-9, -9];
+  function bumpCard(i) { cardBump[i] = st.time; }
 
   // ---------------------------------------------------------------- layout and camera
 
@@ -650,6 +645,8 @@
     cam.oy = cy - (rect.y + rect.size / 2);
     camera.setViewOffset(w, h, cam.ox, cam.oy, w, h);
     camera.updateProjectionMatrix();
+    cam.lastOx = cam.ox;
+    cam.lastOy = cam.oy;
   }
 
   function project() {
@@ -663,9 +660,9 @@
     return b;
   }
 
-  const fitTarget = new T.Vector3(), celTarget = new T.Vector3(0, 0.55, 5.35), camTarget = new T.Vector3();
+  const fitTarget = new T.Vector3(), celTarget = new T.Vector3(0, 0.9, 4.9), camTarget = new T.Vector3();
   function updateCamera(dt) {
-    const want = st.mode === 'celebrate' ? 1 : 0;
+    const want = st.mode === 'celebrate' || (st.mode === 'tally' && st.cel) ? 1 : 0;
     cam.focus += (want - cam.focus) * Math.min(1, dt * 2.2);
     const f = smooth(clamp(cam.focus, 0, 1));
     fitTarget.set(0, 0, cam.fitZ);
@@ -673,6 +670,15 @@
     let shake = 0;
     if (st.shakeT > 0) { st.shakeT -= dt; shake = st.shakeT * 0.25; }
     placeCamera(camTarget, lerp(EL, 0.55, f), lerp(cam.dist, cam.dist * 0.36, f));
+    // while focused on the brothers, centre them in the arena's square instead of using the arena-fit offset
+    const w = window.innerWidth, h = window.innerHeight;
+    const ox = lerp(cam.ox, w / 2 - (rect.x + rect.size / 2), f), oy = lerp(cam.oy, h / 2 - (rect.y + rect.size / 2), f);
+    if (ox !== cam.lastOx || oy !== cam.lastOy) {
+      cam.lastOx = ox;
+      cam.lastOy = oy;
+      camera.setViewOffset(w, h, ox, oy, w, h);
+      camera.updateProjectionMatrix();
+    }
     if (st.peek) placeCamera(new T.Vector3(st.peek.x, 0.3, st.peek.z), st.peek.el, st.peek.dist);
     if (shake) camera.position.x += (Math.random() - 0.5) * shake;
   }
@@ -836,6 +842,8 @@
     st.modeT = 0;
     const hud = ['play', 'intro', 'pause', 'celebrate'].includes(m) || (m === 'over' && !st.demo);
     $('hud').classList.toggle('hidden', !hud);
+    $('budBtn').classList.toggle('hidden', m === 'celebrate');
+    $('budBar').style.visibility = m === 'celebrate' ? 'hidden' : '';
     $('build').classList.toggle('hidden', m !== 'build');
     layout();
   }
@@ -924,6 +932,7 @@
   }
 
   function toMenu() {
+    if (st.mode === 'build') editor.close();
     show('title');
     $('curtain').classList.add('hidden');
     st.custom = null;
@@ -964,7 +973,7 @@
     shellViews.clear();
     if (powerView) { scene.remove(powerView); powerView = powerRef = null; }
     markers.forEach((m) => { m.visible = false; });
-    st.cel = { tanks: [], ballAt: 0 };
+    st.cel = { tanks: [], t: 0 };
     for (const kind of ['teddy', 'tommy']) {
       const v = takeView({ kind, variant: 'player', team: 'ally', dir: 0 });
       const [sx, sy] = M.PLAYER_SPAWN[kind];
@@ -980,7 +989,8 @@
   }
 
   function updateCelebrate(dt) {
-    const k = st.modeT;
+    st.cel.t += dt;
+    const k = st.cel.t;
     if (Math.floor(k * 3) !== Math.floor((k - dt) * 3) && k < 4.5) fx.confetti(0, 5.2, 14);
     for (const c of st.cel.tanks) {
       const v = c.v, p = v.person;
@@ -1020,7 +1030,7 @@
       v.body.rotation.y = 0;
       v.shield.visible = false;
     }
-    if (k > 5.6) showTally();
+    if (k > 5.6 && st.mode === 'celebrate') showTally();
   }
 
   function showTally() {
@@ -1042,7 +1052,7 @@
     html += `<span class="h">SCORE</span>${S.players.map((P) => `<span class="tot">${P.score}</span>`).join('')}`;
     g.innerHTML = html;
     const kills = S.players.reduce((n, P) => n + M.FOE_ORDER.reduce((m, v) => m + P.kills[v], 0), 0);
-    $('tallySub').textContent = last ? `You beat all ${TT.STAGES.length} stages! Teddy and Tommy are the cookie champions!` : `${kills} zombie tanks went POOF!${st.custom ? '' : ' Next: ' + TT.STAGES[st.stageNo].name}`;
+    $('tallySub').textContent = last ? `You beat all ${TT.STAGES.length} stages! Teddy and Tommy are the cookie champions!` : `${kills} zombie tank${kills === 1 ? '' : 's'} went POOF!${st.custom ? '' : ' Next: ' + TT.STAGES[st.stageNo].name}`;
     $('nextBtn').textContent = last ? '🏆 MENU' : st.custom ? '🛠️ BACK TO BUILD' : 'NEXT STAGE ▶';
     if (!st.custom && !last) { settings.stage = st.stageNo + 1; saveSettings(); }
     Kit.sound.music('title');
@@ -1135,10 +1145,18 @@
       const stars = card.querySelectorAll('.stars i');
       stars.forEach((s, k) => s.classList.toggle('on', P.star > k));
       card.classList.toggle('out', P.out);
+      const b = clamp(1 - (st.time - cardBump[i]) / 0.45, 0, 1);
+      const key = b > 0 ? b.toFixed(2) : '0';
+      if (hudCache['b' + i] !== key) {
+        hudCache['b' + i] = key;
+        card.style.transform = b > 0 ? `scale(${1 + 0.08 * Math.sin(b * Math.PI)})` : '';
+        card.style.background = b > 0 ? `rgba(255, 212, 0, ${0.5 * b})` : '';
+      }
     });
     const left = S.queue.length;
-    if (hudCache.foes !== left) {
-      hudCache.foes = left;
+    const fkey = left + '/' + S.foesLeft();
+    if (hudCache.foes !== fkey) {
+      hudCache.foes = fkey;
       const imgs = $('foes').children;
       for (let i = 0; i < imgs.length; i++) imgs[i].classList.toggle('gone', i >= left);
       $('foeN').textContent = `🧟 ${S.foesLeft()}`;
@@ -1228,7 +1246,7 @@
       editor.close();
       startGame(st.players, { custom: st.custom, stage: 1 });
     },
-    menu() { editor.close(); toMenu(); },
+    menu() { toMenu(); },
     players: () => settings.lastPlayers || ['teddy'],
     setPlayers(p) { settings.lastPlayers = p; saveSettings(); },
   });
@@ -1275,7 +1293,7 @@
       if (want !== st.ringFlash) { st.ringFlash = want; arena.rebuildSolid(S.grid, want); }
     }
     if (st.mode === 'intro') updateIntro();
-    if (st.mode === 'celebrate') updateCelebrate(dt);
+    if (st.cel && (st.mode === 'celebrate' || st.mode === 'tally')) updateCelebrate(dt);
     if (S && st.mode === 'play' && st.clearAt && st.time >= st.clearAt) { st.clearAt = 0; startCelebrate(); }
     if (S && st.overAt && st.time >= st.overAt && (st.mode === 'play' || st.mode === 'over')) {
       st.overAt = 0;

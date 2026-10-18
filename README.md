@@ -1,5 +1,7 @@
 # Tank TT
 
+[![Tank TT title screen](docs/screenshot.jpg)](https://adong.github.io/tank-tt/)
+
 A top-down tank game for Teddy and Tommy, in the spirit of the 1980s arcade tank classics Dad grew up with, and best played together. It's built with Claude Code from plain JavaScript and Three.js, on the shared Claude Games kit.
 Zombie tanks and robot tanks roll in from the top. The brothers drive their own tanks, and each one pops out of his hatch to look around. Together they guard a cookie jar at the bottom of the screen.
 There are no image, model or audio files: the tanks and the arena are built from boxes, every texture is painted on a canvas, and every sound is synthesised.
